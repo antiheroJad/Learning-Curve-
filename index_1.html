@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Self-paced n8n course: AI agents and AI automation with reference videos and hands-on builds.">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>AI Agents & Automation with n8n</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: workflow-canvas metaphor — a dotted canvas, modules as connected nodes on a wire; sidebar outline + lesson pane */
+:root{
+  --bg:#f3f4f8; --surface:#ffffff; --ink:#1b1d33; --muted:#5d6180; --line:#d9dbe7; --dot:#cdd0e0;
+  --accent:#d63c66; --accent-soft:#fbe4ea; --done:#108a72; --done-soft:#dcf3ec; --warn:#a86400; --warn-soft:#fdf0d8;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12131f; --surface:#1b1d2e; --ink:#e9eaf4; --muted:#9ea2c0; --line:#2d3048; --dot:#2a2c42;
+  --accent:#ff6f93; --accent-soft:#3a1c29; --done:#3fd0ae; --done-soft:#123129; --warn:#f0b357; --warn-soft:#33270f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12131f; --surface:#1b1d2e; --ink:#e9eaf4; --muted:#9ea2c0; --line:#2d3048; --dot:#2a2c42;
+  --accent:#ff6f93; --accent-soft:#3a1c29; --done:#3fd0ae; --done-soft:#123129; --warn:#f0b357; --warn-soft:#33270f; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);
+  background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:22px 22px;}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+@media (max-width:860px){.shell{grid-template-columns:minmax(0,1fr)}}
+
+/* sidebar */
+aside{border-right:1px solid var(--line);background:var(--surface);position:sticky;top:0;height:100vh;overflow:auto;
+  padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px}
+@media (max-width:860px){aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding-right:max(16px,env(safe-area-inset-right,0px))}
+  aside .outline{display:none} aside.open .outline{display:block}}
+.brand{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.brand .eyebrow{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.brand h1{font:800 22px/1.15 var(--display);margin:0;text-wrap:balance;cursor:pointer}
+.meter{display:flex;flex-direction:column;gap:6px;margin:12px 0 16px}
+.meter .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--done);width:0;transition:width .4s}
+.meter small{font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.toggle-outline{display:none;width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);text-align:left}
+@media (max-width:860px){.toggle-outline{display:block}}
+.outline details{border-top:1px solid var(--line)}
+.outline summary{list-style:none;cursor:pointer;padding:10px 0;display:flex;gap:10px;align-items:baseline}
+.outline summary::-webkit-details-marker{display:none}
+.outline summary .mnum{font:500 12px var(--mono);color:var(--accent);min-width:22px}
+.outline summary .mt{font-weight:600;font-size:14px;line-height:1.3;flex:1}
+.outline summary .mc{font:11px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.outline ol{list-style:none;margin:0 0 10px;padding:0}
+.outline li button{width:100%;text-align:left;border:0;background:none;padding:6px 8px 6px 32px;border-radius:6px;font-size:13px;line-height:1.35;display:flex;gap:8px;position:relative;color:var(--muted)}
+.outline li button:hover{background:var(--bg);color:var(--ink)}
+.outline li button.cur{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.outline li button::before{content:"";position:absolute;left:12px;top:11px;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted)}
+.outline li button.done::before{background:var(--done);border-color:var(--done)}
+
+/* main */
+main{min-width:0;padding-block:28px 64px;padding-left:max(16px,4vw);padding-right:max(16px,env(safe-area-inset-right,0px),4vw)}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.hero{display:flex;flex-direction:column;gap:12px}
+.hero .eyebrow,.lesson .eyebrow{font:500 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.hero h2{font:800 clamp(30px,5vw,48px)/1.05 var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.hero p{margin:0;max-width:62ch;color:var(--muted);font-size:16px}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 12px var(--mono);padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-variant-numeric:tabular-nums}
+.setup{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.setup h3{margin:0;font:700 18px var(--display)}
+.setup ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+
+/* module chain */
+.chain{display:flex;flex-direction:column;gap:0;position:relative}
+.node{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;position:relative;padding-bottom:18px}
+.node:not(:last-child)::after{content:"";position:absolute;left:21px;top:44px;bottom:0;width:2px;background:var(--line)}
+.port{width:44px;height:44px;border-radius:12px;background:var(--surface);border:2px solid var(--ink);display:grid;place-items:center;font:700 15px var(--mono);position:relative;z-index:1}
+.node.complete .port{border-color:var(--done);background:var(--done-soft);color:var(--done)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;width:100%;display:flex;flex-direction:column;gap:6px}
+.card:hover{border-color:var(--accent)}
+.card h4{margin:0;font:700 18px/1.25 var(--display)}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.card .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.card .mini{flex:1;min-width:80px;height:5px;background:var(--line);border-radius:99px;overflow:hidden}
+.card .mini i{display:block;height:100%;background:var(--done)}
+
+/* lesson */
+.lesson{display:flex;flex-direction:column;gap:20px}
+.lesson h2{font:800 clamp(26px,4vw,38px)/1.1 var(--display);margin:4px 0 0;text-wrap:balance}
+.lesson .meta{display:flex;flex-wrap:wrap;gap:8px}
+.lesson .summary{font-size:16px;max-width:65ch;margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.panel h3{margin:0;font:700 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panel ul,.panel ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.panel.build{border-left:4px solid var(--accent)}
+.panel.caution{background:var(--warn-soft);border-color:transparent;color:var(--ink)}
+.panel.caution strong{color:var(--warn)}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.lk{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;font-size:14px}
+.lk:hover{border-color:var(--accent)}
+.lk .tag{font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.lk .tag.off{background:var(--done-soft);color:var(--done)}
+textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:14px/1.5 var(--body);padding:10px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.isdone{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+.btn:disabled{opacity:.4;cursor:default}
+.nav{display:flex;gap:10px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+code{font:13px var(--mono);background:var(--bg);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="shell">
+  <aside id="side">
+    <div class="brand">
+      <span class="eyebrow">n8n · AI Agents</span>
+      <h1 id="homeLink" tabindex="0" role="link">AI Agents & Automation with n8n</h1>
+    </div>
+    <div class="meter"><div class="bar"><i id="barFill"></i></div><small id="barText">0 of 0 lessons complete</small></div>
+    <button class="toggle-outline" id="toggleOutline" aria-expanded="false">Show course outline</button>
+    <nav class="outline" id="outline"></nav>
+  </aside>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+
+<script>
+const YT = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+const D = "https://docs.n8n.io/integrations/builtin/";
+const DOCS = {
+  aiTut:["Official tutorial: Build an AI chat agent","https://docs.n8n.io/advanced-ai/intro-tutorial"],
+  agent:["AI Agent node",D+"cluster-nodes/root-nodes/n8n-nodes-langchain.agent/"],
+  openai:["OpenAI Chat Model node",D+"cluster-nodes/sub-nodes/n8n-nodes-langchain.lmchatopenai/"],
+  memory:["Simple Memory node",D+"cluster-nodes/sub-nodes/n8n-nodes-langchain.memorybufferwindow/"],
+  gmail:["Gmail node",D+"app-nodes/n8n-nodes-base.gmail/"],
+  gcal:["Google Calendar node",D+"app-nodes/n8n-nodes-base.googlecalendar/"],
+  gsheets:["Google Sheets node",D+"app-nodes/n8n-nodes-base.googlesheets/"],
+  gdriveT:["Google Drive Trigger",D+"trigger-nodes/n8n-nodes-base.googledrivetrigger/"],
+  gdrive:["Google Drive node",D+"app-nodes/n8n-nodes-base.googledrive/"],
+  supaVS:["Supabase Vector Store node",D+"cluster-nodes/root-nodes/n8n-nodes-langchain.vectorstoresupabase/"],
+  supaQS:["Supabase vector quickstart (SQL setup)","https://supabase.com/docs/guides/ai/langchain?database-method=sql"],
+  vsTool:["Vector Store Q&A Tool",D+"cluster-nodes/sub-nodes/n8n-nodes-langchain.toolvectorstore/"],
+  supa:["Supabase node",D+"app-nodes/n8n-nodes-base.supabase/"],
+  ragTpl:["Template: AI agent chatting with files in Supabase","https://n8n.io/workflows/2621-ai-agent-to-chat-with-files-in-supabase-storage/"],
+  webhook:["Webhook node",D+"core-nodes/n8n-nodes-base.webhook/"],
+  schedule:["Schedule Trigger",D+"core-nodes/n8n-nodes-base.scheduletrigger/"],
+  telegram:["Telegram Trigger",D+"trigger-nodes/n8n-nodes-base.telegramtrigger/"],
+  form:["n8n Form Trigger",D+"core-nodes/n8n-nodes-base.formtrigger/"],
+  execWf:["Execute Workflow Trigger",D+"core-nodes/n8n-nodes-base.executeworkflowtrigger/"],
+  chat:["Chat Trigger",D+"core-nodes/n8n-nodes-langchain.chattrigger/"],
+  http:["HTTP Request node",D+"core-nodes/n8n-nodes-base.httprequest/"],
+  set:["Edit Fields (Set) node",D+"core-nodes/n8n-nodes-base.set/"],
+  code:["Code node",D+"core-nodes/n8n-nodes-base.code/"],
+  ifn:["If node",D+"core-nodes/n8n-nodes-base.if/"],
+  learn:["n8n learning path","https://docs.n8n.io/learning-path"],
+  vc:["n8n official video courses","https://docs.n8n.io/video-courses/"],
+  tpl:["n8n workflow templates","https://n8n.io/workflows/"],
+  forum:["n8n community forum","https://community.n8n.io/"]
+};
+const OFFICIAL = {
+  playlist:["n8n Beginner Course (official playlist)","https://www.youtube.com/playlist?list=PLlET0GsrLUL59YbxstZE71WszP3pVnZfI"],
+  intro:["n8n Beginner Course 1/9: Introduction to Automation","https://www.youtube.com/watch?v=4BVTkqbn_tY"],
+  fccAgents:["freeCodeCamp: Production-grade AI agents with n8n","https://www.freecodecamp.org/news/learn-n8n-to-design-develop-and-deploy-production-grade-ai-agents/"],
+  fccComplex:["freeCodeCamp: Complex workflows & AI integration","https://www.freecodecamp.org/news/build-complex-workflows-with-n8n-and-master-ai-integration/"]
+};
+const FIN = "Build this as a research and alerting tool that runs on paper trades or a watch list. Don't let an agent place real-money trades or bets, and don't treat its output as financial advice.";
+
+// [title, minutes ("m:ss" or null), summary, [learn points], [practice steps], videoQuery, [docs keys], [official keys]]
+const COURSE = [
+ {t:"AI Agents Fundamentals", d:"What agents are, how they differ from plain LLM calls, and where no-code agents hit their limits.", ref:["fccAgents","intro"], L:[
+  ["Introduction To The Course","0:35","A map of what you'll build: a personal assistant agent, a RAG knowledge agent, and a set of business agents.",["How the course is laid out","What you need: an n8n account, an OpenAI key, a Google account"],["Sign up for n8n Cloud's free trial or install n8n locally with npm install -g n8n and run n8n start.","Create an OpenAI API account and add a small amount of credit.","Bookmark this course page and the n8n docs."],"n8n AI agents full course",["learn","vc"],["intro"]],
+  ["What Are AI Agents?","1:22","An agent is an LLM that can reason about a goal, decide which tools to use, and act in a loop until the task is done.",["Agent = model + instructions + tools + memory","Why agents can make decisions instead of following a fixed path"],["Write down three repetitive tasks from your own work.","For each, list which apps an agent would need to touch to do it for you."],"what are AI agents explained",["aiTut"],[]],
+  ["Example AI Agent Workflow","1:05","A walk through a finished agent: a chat message comes in, the agent picks a tool, calls it, and replies.",["Trigger → Agent → Tools → Response","Reading a workflow left to right"],["Open n8n's template library and import any AI agent template.","Trace each connection and label it as trigger, model, memory or tool."],"n8n AI agent workflow example walkthrough",["tpl","agent"],[]],
+  ["AI Agents vs LLMs","1:13","An LLM generates text from a prompt. An agent wraps that LLM with tools and memory so it can take actions in other systems.",["LLM: one prompt in, one answer out","Agent: loops, picks tools, remembers context"],["Ask ChatGPT to 'schedule a meeting tomorrow at 3pm' and note what it can't actually do.","Write two sentences on which tools an agent would need to complete that request."],"AI agents vs LLM difference",["aiTut"],[]],
+  ["Two Ways To Build AI Agents","1:08","You can build agents in code (Python frameworks like LangChain) or visually in no-code tools like n8n.",["Code frameworks: full control, more setup","No-code: fast to build, visual debugging"],["List one pro and one con of each approach for your own use case.","Decide which approach fits the three tasks you listed earlier."],"build AI agents no code vs code",["learn"],[]],
+  ["Limitations of No-Code AI Agents","1:19","No-code agents can struggle with very complex logic, large data volumes, and tight cost control. Knowing the limits helps you design around them.",["Token cost and rate limits","When to drop into a Code node or a sub-workflow"],["Pick one of your three tasks and list what could go wrong if the agent misread an instruction.","Write one guardrail for it, such as human approval before sending."],"n8n AI agent limitations",["code"],[]]
+ ]},
+ {t:"Build Your First AI Agent", d:"From a first two-node automation to a personal assistant agent with memory, Gmail and Google Calendar.", ref:["fccAgents"], L:[
+  ["Introduction","0:52","You'll go from a simple automation to an agent that reads and sends email and books calendar events.",["What the finished assistant can do"],["Open a blank workflow in n8n and name it 'Personal Assistant'."],"n8n first workflow beginner",["learn"],["playlist"]],
+  ["Building First Automation (Actions)","4:09","Action nodes do work in an app: create a row, send a message, fetch a record.",["Adding a node from the panel","Running a single node and reading its output"],["Add a Manual Trigger, then a Google Sheets 'Append row' action.","Run it and confirm the row appears in your sheet."],"n8n first automation actions google sheets",["gsheets"],["playlist"]],
+  ["Building First Automation (Trigger)","3:39","Triggers decide when a workflow runs. Swap the manual trigger for one that reacts to a real event.",["Manual vs event triggers","Test events vs production runs"],["Replace the Manual Trigger with a Gmail trigger for new emails.","Send yourself a test email and confirm a sheet row is created with its subject line."],"n8n trigger node tutorial gmail trigger",["gmail"],["playlist"]],
+  ["Building AI Agent Workflow","2:27","Add the AI Agent node after a Chat Trigger so you can talk to it from n8n's built-in chat window.",["Chat Trigger + AI Agent","Where the system message goes"],["Create a Chat Trigger and connect an AI Agent node.","Add a system message: 'You are my personal assistant. Be brief.'"],"n8n AI agent node chat trigger tutorial",["aiTut","agent","chat"],[]],
+  ["OpenAI Credentials","1:36","Connect a chat model by creating an OpenAI credential in n8n.",["Creating an API key","Storing keys as n8n credentials, never in node fields"],["Create an OpenAI API key and add it as a credential in n8n.","Attach an OpenAI Chat Model to your agent and send 'hello' in the chat."],"n8n OpenAI credentials setup",["openai"],[]],
+  ["Adding Memory to AI Agent","1:53","Without memory the agent forgets each message. A memory sub-node keeps recent turns in context.",["Simple (window buffer) memory","Context window length"],["Tell the agent your name, then ask 'what's my name?' and watch it fail.","Add Simple Memory with a 10-message window and repeat the test."],"n8n AI agent memory window buffer",["memory"],[]],
+  ["Adding First Tool to AI Agent","3:06","Tools let the agent act. Start with a simple one so you can see how it decides when to call it.",["Tool descriptions guide tool choice","Reading the agent's tool-call log"],["Add the Calculator or a Google Sheets tool to your agent.","Ask a question that needs it and open the execution log to see the tool call."],"n8n AI agent add tool tutorial",["agent"],[]],
+  ["Adding Gmail Tool to AI Agent","2:02","Give the agent a Gmail tool so it can read and send email for you.",["Letting the model fill fields with $fromAI","Scoping what the tool is allowed to do"],["Add a Gmail 'Send' tool and let the agent fill To, Subject and Message.","Ask it to email yourself a test note."],"n8n AI agent gmail tool send email",["gmail"],[]],
+  ["Adding Calendar Tool to AI Agent","1:54","Add Google Calendar tools so the agent can check availability and create events.",["Passing dates the model understands","Telling the agent today's date in the system message"],["Add Calendar 'Get many events' and 'Create event' tools.","Add {{ $now }} to the system message, then ask it to book a meeting tomorrow at 3pm."],"n8n AI agent google calendar tool",["gcal"],[]],
+  ["Finalizing AI Agent","4:40","Polish the system prompt, test edge cases, and activate the workflow.",["Writing clear tool instructions in the prompt","Activating and testing the production chat URL"],["List each tool and when to use it in the system message.","Run five realistic requests, fix any wrong tool choices, then activate."],"n8n personal assistant AI agent gmail calendar",["agent","aiTut"],[]]
+ ], project:"Personal assistant agent: chat with it to read your inbox, send emails, and book calendar events."},
+ {t:"RAG AI Agents", d:"Give an agent your own documents: Google Drive files embedded into a Supabase vector store and searched at question time.", ref:[], L:[
+  ["Introduction to RAG","0:46","Retrieval-augmented generation looks up relevant chunks of your documents and hands them to the model before it answers.",["Embeddings and vector search","Why RAG beats pasting documents into the prompt"],["Pick three documents you'd like an agent to answer questions about (an FAQ, a policy, a price list)."],"RAG retrieval augmented generation explained",["supaVS"],[]],
+  ["Building Simple RAG AI Agent","1:36","Wire an AI Agent to a vector store tool so it can search your knowledge base.",["Vector store as an agent tool","Embedding model sub-node"],["Create a Chat Trigger and AI Agent, then add a Supabase Vector Store tool.","Attach OpenAI Embeddings to the vector store."],"n8n RAG AI agent supabase",["vsTool","supaVS","ragTpl"],[]],
+  ["Setting Up Google Drive Trigger","3:03","Watch a Drive folder so new or updated files feed the knowledge base automatically.",["File created vs file updated events","Polling intervals"],["Create a 'Knowledge Base' folder in Google Drive.","Add a Google Drive Trigger watching that folder and test it with a new file."],"n8n google drive trigger new file",["gdriveT"],[]],
+  ["Downloading Files to n8n","1:24","Download the file's content as binary data so it can be split and embedded.",["Binary data in n8n","Converting Google Docs to plain text on download"],["Add a Google Drive 'Download file' node using the file ID from the trigger.","Confirm the binary data appears in the output panel."],"n8n google drive download file binary",["gdrive"],[]],
+  ["Supabase Vector Store","5:02","Create a Supabase project, run the vector setup SQL, and insert document chunks with embeddings.",["The documents table and match_documents function","Text splitters and chunk size"],["Create a free Supabase project and run the LangChain quickstart SQL.","Add a Supabase Vector Store node in 'Insert Documents' mode with a Default Data Loader and text splitter.","Run it and check the documents table in Supabase."],"n8n supabase vector store insert documents",["supaVS","supaQS","supa"],[]],
+  ["Building Second AI Workflow","4:04","Connect the chat agent to the same table, then test questions answered from your files.",["Two workflows: ingest and chat","Avoiding duplicate chunks when files change"],["Point the agent's vector store tool at the same table and query name.","Ask three questions only your documents can answer and check the sources it used."],"n8n RAG agent google drive supabase full workflow",["supaVS","ragTpl"],[]]
+ ], project:"Knowledge-base agent: drop a file in a Drive folder and ask questions about it a minute later."},
+ {t:"n8n Deep Dive: Triggers & Nodes", d:"A tour of every trigger type and the core node families you'll use in every build.", ref:["playlist","intro"], L:[
+  ["n8n Overview","5:03","The editor, canvas, executions list, credentials, and how data flows between nodes as items.",["Items and JSON in n8n","The executions tab for debugging"],["Open a past execution and inspect the input and output of each node.","Switch a node's output between Table, JSON and Schema views."],"n8n overview tutorial interface",["learn"],["intro","playlist"]],
+  ["Active vs Inactive Workflows","3:22","Inactive workflows only run when you test them. Active workflows listen for real triggers in production.",["Test vs production URLs","When to deactivate"],["Activate your assistant workflow and trigger it from the production chat URL.","Find the run in the Executions list."],"n8n active vs inactive workflow production",["webhook"],["playlist"]],
+  ["Triggers Overview","3:19","Every workflow starts with exactly one trigger. Pick it based on what should start the work.",["App events, schedules, webhooks, forms, chat, other workflows"],["For each of your three tasks, choose the trigger type it needs."],"n8n triggers explained",["learn"],[]],
+  ["On-App Event Trigger","3:56","App triggers fire when something happens in a connected service, like a new email or a new sheet row.",["Polling vs instant app triggers"],["Add a Google Sheets trigger for new rows and send yourself a Gmail notification for each."],"n8n app event trigger google sheets new row",["gsheets"],[]],
+  ["Telegram Trigger","2:47","Run workflows from Telegram messages, a handy front end for agents on your phone.",["Creating a bot with BotFather","Replying in the same chat"],["Create a Telegram bot with BotFather and add its token as a credential.","Build Telegram Trigger → AI Agent → Telegram 'Send message' and chat with it."],"n8n telegram trigger AI agent bot",["telegram"],[]],
+  ["Schedule Trigger","3:33","Run workflows on a timetable: every hour, every weekday at 8am, or a custom cron expression.",["Intervals vs cron","Time zone settings"],["Build a schedule that sends you a daily 8am summary email.","Set the workflow time zone to Asia/Manila."],"n8n schedule trigger cron",["schedule"],[]],
+  ["Webhook Trigger","3:25","A webhook gives your workflow a URL that other apps can call with data.",["GET vs POST","Respond to Webhook node"],["Create a POST webhook and call it with curl or Postman with a JSON body.","Return a custom JSON response."],"n8n webhook trigger tutorial",["webhook"],[]],
+  ["On Form Submission","7:44","n8n's form trigger builds a hosted form and starts the workflow when someone submits it.",["Form fields and validation","Multi-step forms"],["Build a lead capture form with name, email and budget.","Append each submission to a Google Sheet and email a thank-you."],"n8n form trigger on form submission",["form"],[]],
+  ["When Executed By Another Workflow","3:32","Sub-workflows let you reuse logic and split big agents into smaller pieces.",["Passing inputs into a sub-workflow","Using a sub-workflow as an agent tool"],["Create a 'Send Slack/Email alert' sub-workflow.","Call it from two different parent workflows."],"n8n execute workflow trigger sub workflow",["execWf"],[]],
+  ["Chat Trigger","4:18","The chat trigger gives you a test chat window and a public chat URL or embeddable widget.",["Public vs private chat","Session IDs and memory"],["Make your assistant's chat public and test it from your phone."],"n8n chat trigger public chat embed",["chat"],[]],
+  ["Nodes Overview","1:40","Nodes fall into a few families: triggers, actions in apps, data transformation, flow control, and AI.",["Where to find each node type in the panel"],["Open the node panel and add one node from each category to a scratch workflow."],"n8n nodes overview",["learn"],["playlist"]],
+  ["AI Agent Node","10:00","A deep look at the agent node: prompt source, system message, tools, memory, output parsers and options.",["Prompt from chat vs 'Define below'","Max iterations and returning intermediate steps","Structured output parsers"],["Rebuild your assistant with the prompt defined from an upstream field instead of chat.","Add a Structured Output Parser that returns JSON."],"n8n AI agent node deep dive system message output parser",["agent","aiTut"],[]],
+  ["Action In An App","2:41","Hundreds of app nodes cover common operations without writing API calls.",["Resources and operations","Credentials per app"],["Pick an app you use daily and run three different operations on it."],"n8n action in an app node",["tpl"],[]],
+  ["Data Transformation Nodes","10:25","Shape data with Edit Fields, Filter, Sort, Aggregate, Split Out, and the Code node.",["Expressions with {{ }}","Splitting arrays into items and aggregating back"],["Take an API response with a list and split it into items.","Filter, sort, then aggregate the top 5 back into one message."],"n8n data transformation nodes edit fields split out aggregate",["set","code"],["playlist"]],
+  ["Flow Node","6:02","Control flow with If, Switch, Merge, Loop Over Items and Wait.",["Branching on conditions","Merging branches back together"],["Route leads to different emails with a Switch on budget size.","Merge the branches and log every lead to one sheet."],"n8n if switch merge loop flow nodes",["ifn"],["playlist"]],
+  ["HTTP Request Node","6:05","Call any API, even without a dedicated node. Import a curl command to save setup time.",["Headers, query params, JSON body","Auth via credentials","Import from curl"],["Call a free public API (for example a weather API) with the HTTP Request node.","Turn the response into a short summary with an AI node."],"n8n HTTP request node API tutorial",["http"],["playlist"]],
+  ["AI Models",null,"Compare the chat models you can plug into n8n: OpenAI, Anthropic, Google Gemini, Groq, and local models via Ollama.",["Cost, speed and quality trade-offs","Swapping models without rebuilding the agent"],["Run the same five prompts through two different chat models.","Note cost and quality, then pick a default for your agents."],"n8n AI models comparison chat model openai anthropic gemini",["openai","agent"],[]]
+ ]},
+ {t:"Business AI Agents I: Leads, Markets & Research", d:"Agents that find and manage leads, research markets, and track public data.", ref:["fccComplex"], L:[
+  ["Introduction to Building AI Agents For Businesses","0:21","The pattern you'll reuse: gather data, let the agent analyze it, deliver results where people work.",["Data in → reasoning → delivery"],["Write a one-paragraph brief for a business agent a local client could pay for."],"n8n AI agents for business",["tpl"],[]],
+  ["Leads Generator Overview","0:43","An agent that finds businesses matching a target profile and saves them as leads.",["Defining the ideal customer profile"],["Define a target: industry, city, company size."],"n8n AI lead generation agent",["tpl"],[]],
+  ["Building Leads Generator AI Agent","16:16","Scrape or search for businesses, enrich them, and write clean records to a sheet or CRM.",["Search/scrape via HTTP Request","Deduplicating leads"],["Build an agent that searches for 20 businesses matching your profile.","Save name, website, email and a one-line pitch angle to Google Sheets, skipping duplicates."],"n8n lead generation AI agent google maps scraper",["http","gsheets","agent"],[]],
+  ["Manage Existing Leads Overview","1:25","A second agent that keeps your lead list up to date and drafts follow-ups.",["Lead status pipelines"],["Add a Status column (New, Contacted, Replied, Won, Lost) to your lead sheet."],"n8n AI agent manage leads CRM",["gsheets"],[]],
+  ["Building Leads Management AI Agent","11:47","Let the agent read, update and query leads by chat, and draft outreach emails for approval.",["Sheets as an agent tool","Drafts instead of auto-sending"],["Give the agent Sheets read/update tools and a Gmail 'Create draft' tool.","Ask: 'Draft follow-ups for all leads contacted more than 7 days ago.'"],"n8n AI agent lead management google sheets gmail drafts",["gsheets","gmail"],[]],
+  ["Crypto Trading AI Agent Overview","1:57","An agent that combines price data and news sentiment into a market summary.",["Signals vs decisions"],["List the coins you want to watch and how often you want a report."],"n8n crypto AI agent",["schedule"],[],1],
+  ["AI Agent Structure","6:41","Split the agent into parts: one for price data, one for sentiment, one that writes the report.",["Parent agent with sub-workflow tools"],["Sketch the three parts on paper with their inputs and outputs."],"n8n multi agent structure sub workflows tools",["execWf","agent"],[],1],
+  ["Building AI Agent (Candlestick Data)","8:35","Pull candlestick (OHLC) data from a public market API and summarize the trend.",["OHLC data and timeframes","Keeping the payload small for the model"],["Use the HTTP Request node to fetch 4-hour candles for one coin from a public exchange API.","Aggregate the last 50 candles and ask the model to describe the trend."],"n8n crypto candlestick data API AI agent",["http","code"],[],1],
+  ["Building AI Agent (Sentiment Analysis)","6:57","Fetch recent news headlines and score their sentiment.",["News APIs","Sentiment as a structured score"],["Fetch 10 recent headlines for your coin.","Return a JSON sentiment score from -1 to 1 with a one-line reason."],"n8n AI sentiment analysis news",["http","agent"],[],1],
+  ["Finalizing AI Agent","6:59","Combine both signals into one report and send it on a schedule.",["Report formatting","Telegram or email delivery"],["Merge price and sentiment results and send a Telegram report every morning.","Add a line stating it's not trading advice."],"n8n crypto AI agent telegram report",["telegram","schedule"],[],1],
+  ["Politician Trade Tracker AI Agent Overview","2:16","Track publicly disclosed stock trades by members of Congress and summarize them.",["Public disclosure data under the STOCK Act"],["Find a source of public congressional trade disclosures you can query."],"n8n politician stock trade tracker",["http"],[],1],
+  ["Politician AI Agent Structure","3:26","Fetch disclosures, filter what's new, enrich with company info, and report.",["Tracking what's already been seen"],["Sketch the workflow: schedule → fetch → filter new → summarize → notify."],"n8n AI agent structure data pipeline",["schedule"],[],1],
+  ["Building Politician AI Agent (Trade Data)","14:03","Pull trade data via HTTP, filter by date, and store seen records to avoid duplicates.",["Pagination","Comparing against stored records"],["Fetch the last 30 days of disclosures and filter to new ones only.","Store processed IDs in a sheet or Supabase table."],"n8n HTTP request pagination API data",["http","supa"],[],1],
+  ["Finalizing Politician Tracker AI Agent","6:40","Summarize new trades by person and ticker and deliver a weekly digest.",["Grouping and digest formatting"],["Send a weekly email digest grouped by politician."],"n8n weekly digest email AI summary",["gmail","schedule"],[],1],
+  ["Crypto Memecoin Researcher AI Agent Overview","2:31","A research agent that collects data on new tokens and flags red flags.",["Risk signals: liquidity, holder concentration, contract age"],["List five red flags you'd want the agent to check."],"n8n memecoin research AI agent",["http"],[],1],
+  ["Building Crypto Memecoin Researcher","13:32","Query token data APIs and have the agent produce a structured risk profile.",["Multiple HTTP tools on one agent"],["Give the agent two HTTP tools for token data.","Ask it to return a risk rating with reasons as JSON."],"n8n crypto token research AI agent API",["http","agent"],[],1],
+  ["Finalizing Memecoin Researcher","6:57","Log results and send alerts for tokens that pass your filters.",["Logging to a sheet","Alert thresholds"],["Log every researched token to a sheet and alert only on low-risk ratings."],"n8n AI agent alerts telegram",["telegram","gsheets"],[],1],
+  ["Sports Betting AI Agent Overview","4:55","An agent that pulls odds and team stats and writes a matchup analysis.",["Odds formats and implied probability"],["Choose a league and a public odds or stats API."],"n8n sports AI agent odds analysis",["http"],[],1],
+  ["Building Sports Betting AI Agent","11:49","Fetch upcoming games, odds and recent form, then let the agent compare them.",["Joining data from two APIs","Calculating implied probability in a Code node"],["Fetch this week's games and odds.","Convert odds to implied probability in a Code node."],"n8n sports odds API AI agent",["http","code"],[],1],
+  ["Finalizing Sports Betting AI Agent","10:04","Produce a readable report and track predictions against real results.",["Measuring accuracy over time"],["Log each prediction and its result, and compute hit rate weekly."],"n8n AI predictions tracking google sheets",["gsheets"],[],1],
+  ["BONUS: Market Report",null,"A scheduled agent that writes a daily market overview from several data sources.",["Combining multiple sources into one brief"],["Schedule a weekday 7am report that combines index prices and top headlines and emails it to you."],"n8n AI daily market report",["schedule","http","gmail"],[],1]
+ ], project:"Lead generator + lead manager that work together from one Google Sheet."},
+ {t:"Business AI Agents II: Operations & Marketing", d:"Accounting, real estate, SEO and Reddit agents, including multi-agent setups with child agents.", ref:["fccComplex"], L:[
+  ["Accounting AI Agent Overview","10:24","An agent that handles accounts payable and receivable through two specialist sub-workflows.",["A/P vs A/R","Main agent routing to child workflows"],["Create a sheet with sample invoices: vendor, amount, due date, status."],"n8n accounting AI agent invoices",["gsheets"],[]],
+  ["Building Main AI Agent Node","2:54","The main agent decides whether a request is about bills you owe or money owed to you.",["Routing via tool descriptions"],["Create the main agent with two sub-workflow tools named Accounts Payable and Accounts Receivable."],"n8n main agent sub workflow tools routing",["agent","execWf"],[]],
+  ["Building A/P Workflow","12:29","Extract data from incoming bills, log them, and schedule payment reminders.",["Extracting fields from PDFs","Due-date reminders"],["Forward a sample invoice PDF, extract vendor, amount and due date, and log it.","Send a reminder 3 days before each due date."],"n8n extract invoice data PDF AI",["gmail","gsheets"],[]],
+  ["Building A/R Workflow","6:58","Track unpaid customer invoices and draft polite payment reminders.",["Overdue logic"],["Find invoices more than 14 days overdue and create Gmail drafts for each."],"n8n accounts receivable automation overdue invoice reminder",["gmail","ifn"],[]],
+  ["Real Estate AI Agent Overview","3:06","An agent that answers buyer questions about listings and qualifies leads.",["Listing data as a knowledge source"],["Collect 10 sample listings in a sheet with price, beds, area and link."],"n8n real estate AI agent",["gsheets"],[]],
+  ["Building Real Estate AI Agent","13:02","Let the agent search listings by criteria and capture the buyer's details.",["Filtering a sheet from agent-supplied criteria"],["Ask: '3 bedrooms under ₱8M near the city center' and check that it filters correctly.","Have it save the buyer's name and phone to a leads tab."],"n8n real estate AI agent listings chatbot",["gsheets","agent"],[]],
+  ["Finalizing Real Estate AI Agent","8:42","Add viewing bookings and deploy the chat on a website or Telegram.",["Booking via Calendar tool","Embedding the chat"],["Add a Calendar tool to book viewings and test a full conversation."],"n8n AI agent book appointment calendar chatbot website",["gcal","chat"],[]],
+  ["SEO AI Agent Overview","4:04","A team of agents: one researches keywords, one outlines, one writes, one reviews.",["Parent agent with child agents"],["Pick a niche and five seed keywords."],"n8n SEO AI agent multi agent",["agent"],[]],
+  ["Building First Child Agent","12:42","Build the keyword research child agent as a sub-workflow the parent can call.",["Inputs and outputs of a child agent"],["Build a sub-workflow that takes a keyword and returns 10 related keywords with intent."],"n8n child agent sub workflow AI tool",["execWf","http"],[]],
+  ["Building Remaining Child Agents","14:45","Add outline, writer and editor child agents with focused prompts.",["One job per agent","Passing context between agents"],["Build outline, writer and editor sub-workflows.","Have each return structured output the next can use."],"n8n multi agent content writer workflow",["execWf","agent"],[]],
+  ["Finalizing SEO AI Agent","10:31","Orchestrate the full pipeline and save drafts to Google Docs or your CMS.",["Orchestration order","Human review before publishing"],["Run the full pipeline for one keyword and save the article to Google Docs for review."],"n8n SEO blog writer AI agent google docs",["gdrive"],[]],
+  ["BONUS: Reddit AI Agent Overview","4:58","An agent that monitors subreddits for posts relevant to your business.",["Respecting subreddit rules"],["Choose three subreddits and the kinds of posts you care about."],"n8n reddit AI agent",["http"],[]],
+  ["BONUS: Building Reddit AI Agent","21:25","Fetch new posts, score relevance with AI, and send a digest of the best matches.",["Reddit API via HTTP or Reddit node","Relevance scoring"],["Fetch the latest 25 posts from one subreddit every hour.","Score relevance 1–10 and send posts scoring 8+ to Telegram."],"n8n reddit API AI agent monitor posts",["http","telegram"],[]],
+  ["BONUS: Finding Leads with AI Agents",null,"Use the Reddit monitor and lead tools together to find people actively asking for help you offer.",["Intent signals in public posts"],["Connect the Reddit agent's matches to your lead sheet with a 'Source: Reddit' tag."],"n8n find leads reddit AI agent",["gsheets"],[]]
+ ], project:"SEO content team: parent agent plus four child agents that turn a keyword into a reviewed draft."},
+ {t:"Bonus Agents", d:"Three more complete builds to practice everything end to end.", ref:[], L:[
+  ["Day Trader AI Agent","17:48","Combine market data, technical indicators and news into an intraday watch-list report.",["Indicators computed in a Code node","Alert-only design"],["Compute RSI and moving averages for a watch list in a Code node.","Send an alert when a condition hits, with no automated orders."],"n8n day trading AI agent",["http","code","schedule"],[],1],
+  ["Law Firm AI Agent",null,"An intake agent that collects case details, answers FAQs from firm documents via RAG, and books consultations.",["Intake forms","RAG over firm FAQs","Clear 'not legal advice' boundaries"],["Build a form intake that logs cases to a sheet.","Add a RAG agent over the firm's FAQ and a Calendar tool for consultations."],"n8n law firm AI agent intake",["form","supaVS","gcal"],[]],
+  ["Personal Assistant AI Agent",null,"Your capstone: a Telegram assistant that manages email, calendar, tasks and your documents.",["Combining everything: tools, memory, RAG, sub-workflows"],["Connect Telegram, Gmail, Calendar, Sheets tasks and your RAG knowledge base to one agent.","Use it for a full week and fix whatever annoys you."],"n8n personal assistant AI agent telegram",["telegram","agent","memory"],[]]
+ ], project:"Capstone: your own Telegram personal assistant built from every piece of the course."}
+];
+
+// --- build flat index
+const lessons = [];
+COURSE.forEach((m,mi)=>m.L.forEach((l,li)=>lessons.push({mi,li,id:`m${mi+1}l${li+1}`,t:l[0],dur:l[1],sum:l[2],learn:l[3],prac:l[4],q:l[5],docs:l[6],off:l[7],fin:l[8]})));
+const secs = d => { if(!d) return 0; const [m,s]=d.split(":").map(Number); return m*60+s; };
+const fmtMin = s => { const h=Math.floor(s/3600), m=Math.round((s%3600)/60); return h?`${h}h ${m}m`:`${m}m`; };
+const totalSecs = lessons.reduce((a,l)=>a+secs(l.dur),0);
+
+// --- per-viewer state
+const KEY="n8n-course-v1";
+let state={done:{},notes:{}};
+try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s) state=Object.assign(state,s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const modDone = mi => lessons.filter(l=>l.mi===mi&&state.done[l.id]).length;
+
+function renderOutline(){
+  const cur=location.hash.slice(1);
+  $("#outline").innerHTML = COURSE.map((m,mi)=>{
+    const ls=lessons.filter(l=>l.mi===mi);
+    const open = ls.some(l=>l.id===cur);
+    return `<details ${open?"open":""}><summary><span class="mnum">${String(mi+1).padStart(2,"0")}</span><span class="mt">${esc(m.t)}</span><span class="mc">${modDone(mi)}/${ls.length}</span></summary><ol>${
+      ls.map(l=>`<li><button data-go="${l.id}" class="${state.done[l.id]?"done":""} ${l.id===cur?"cur":""}">${esc(l.t)}</button></li>`).join("")}</ol></details>`;
+  }).join("");
+  const n=Object.keys(state.done).filter(k=>state.done[k]).length;
+  $("#barFill").style.width = (n/lessons.length*100)+"%";
+  $("#barText").textContent = `${n} of ${lessons.length} lessons complete`;
+}
+
+function link(label,url,tag,cls){return `<a class="lk" href="${url}" target="_blank" rel="noopener"><span class="tag ${cls||""}">${tag}</span>${esc(label)}</a>`;}
+
+function renderHome(){
+  const next = lessons.find(l=>!state.done[l.id]) || lessons[0];
+  $("#view").innerHTML = `
+  <section class="hero">
+    <span class="eyebrow">Self-paced course · ${COURSE.length} modules</span>
+    <h2>The Complete AI Agents & AI Automation Course</h2>
+    <p>Build AI agents and business automations in n8n without code. Every lesson has a short brief, reference videos to watch, a hands-on build to practice, and the official docs for the nodes you'll use.</p>
+    <div class="stats"><span class="chip">${lessons.length} lessons</span><span class="chip">${fmtMin(totalSecs)} of video in the original outline</span><span class="chip">${COURSE.filter(m=>m.project).length} portfolio projects</span></div>
+    <div><button class="btn primary" data-go="${next.id}">${Object.values(state.done).some(Boolean)?"Continue":"Start"}: ${esc(next.t)}</button></div>
+  </section>
+  <section class="setup">
+    <h3>Before you start</h3>
+    <ol>
+      <li>Get n8n: the free cloud trial at <code>app.n8n.cloud/register</code>, or locally with <code>npm install -g n8n</code> then <code>n8n start</code>.</li>
+      <li>Create an OpenAI API key and add a few dollars of credit. Other chat models work too.</li>
+      <li>Use a Google account you don't mind connecting (Gmail, Calendar, Drive, Sheets), and make a free Supabase project when you reach Module 3.</li>
+      <li>For each lesson: read the brief, watch one reference video, then do the build before marking it complete.</li>
+    </ol>
+    <div class="links">${link(...OFFICIAL.playlist,"Official video","off")}${link(...DOCS.learn,"Docs","off")}${link(...DOCS.forum,"Help","off")}</div>
+  </section>
+  <section class="chain">${COURSE.map((m,mi)=>{
+    const ls=lessons.filter(l=>l.mi===mi), d=modDone(mi), s=ls.reduce((a,l)=>a+secs(l.dur),0);
+    return `<div class="node ${d===ls.length?"complete":""}"><div class="port">${d===ls.length?"✓":mi+1}</div>
+      <button class="card" data-go="${(ls.find(l=>!state.done[l.id])||ls[0]).id}">
+        <h4>${esc(m.t)}</h4><p>${esc(m.d)}</p>
+        ${m.project?`<p><strong>Project:</strong> ${esc(m.project)}</p>`:""}
+        <div class="row"><span>${ls.length} lessons</span><span>${s?fmtMin(s):"—"}</span><span class="mini"><i style="width:${d/ls.length*100}%"></i></span><span>${d}/${ls.length}</span></div>
+      </button></div>`;}).join("")}
+  </section>`;
+}
+
+function renderLesson(l){
+  const i=lessons.indexOf(l), m=COURSE[l.mi], prev=lessons[i-1], next=lessons[i+1], done=!!state.done[l.id];
+  const offs=[...l.off,...(l.li===0?m.ref:[])].filter((v,k,a)=>a.indexOf(v)===k);
+  $("#view").innerHTML = `
+  <article class="lesson">
+    <div><span class="eyebrow">Module ${l.mi+1} · ${esc(m.t)} · Lesson ${l.li+1} of ${m.L.length}</span>
+    <h2>${esc(l.t)}</h2></div>
+    <div class="meta">${l.dur?`<span class="chip">Original video ${l.dur}</span>`:`<span class="chip">Self-study lesson</span>`}${done?`<span class="chip" style="color:var(--done);border-color:var(--done)">Completed</span>`:""}</div>
+    <p class="summary">${esc(l.sum)}</p>
+    <div class="panel"><h3>What you'll learn</h3><ul>${l.learn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="panel"><h3>Watch</h3>
+      <div class="links">${offs.map(k=>link(...OFFICIAL[k],"Official","off")).join("")}${link(`YouTube: "${l.q}"`,YT(l.q),"Search")}</div>
+      <p class="hint">Search links open current YouTube results for this exact topic. Pick a recent video, since n8n's interface changes often.</p></div>
+    <div class="panel build"><h3>Build it</h3><ol>${l.prac.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
+    ${l.fin?`<div class="panel caution"><p style="margin:0"><strong>Safety note.</strong> ${FIN}</p></div>`:""}
+    <div class="panel"><h3>Docs & templates</h3><div class="links">${l.docs.map(k=>link(...DOCS[k],"Docs","off")).join("")}</div></div>
+    <div class="panel"><h3>Your notes</h3><label for="notes" class="hint">Saved in this browser only.</label><textarea id="notes" placeholder="Credentials you set up, gotchas, ideas for clients…">${esc(state.notes[l.id]||"")}</textarea></div>
+    <div class="actions">
+      <button class="btn ${done?"isdone":"primary"}" id="markDone">${done?"Completed ✓ (undo)":"Mark complete"}</button>
+      <div class="nav"><button class="btn" ${prev?`data-go="${prev.id}"`:"disabled"}>← Previous</button><button class="btn" ${next?`data-go="${next.id}"`:"data-go=\"home\""}>${next?"Next →":"Course home"}</button></div>
+    </div>
+  </article>`;
+  $("#notes").addEventListener("input",e=>{state.notes[l.id]=e.target.value;save();});
+  $("#markDone").addEventListener("click",()=>{
+    state.done[l.id]=!state.done[l.id]; save();
+    if(state.done[l.id]&&next){go(next.id);} else route();
+  });
+}
+
+function route(){
+  const id=location.hash.slice(1), l=lessons.find(x=>x.id===id);
+  l?renderLesson(l):renderHome();
+  renderOutline();
+}
+function go(id){
+  if(id==="home"){ history.replaceState(null,"",location.pathname+location.search); route(); }
+  else if(location.hash.slice(1)===id) route(); else location.hash=id;
+  window.scrollTo({top:0});
+  if(matchMedia("(max-width:860px)").matches){ $("#side").classList.remove("open"); $("#toggleOutline").setAttribute("aria-expanded","false"); $("#toggleOutline").textContent="Show course outline"; }
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]"); if(b){e.preventDefault();go(b.dataset.go);}});
+$("#homeLink").addEventListener("click",()=>go("home"));
+$("#homeLink").addEventListener("keydown",e=>{if(e.key==="Enter")go("home");});
+$("#toggleOutline").addEventListener("click",e=>{const s=$("#side");s.classList.toggle("open");const o=s.classList.contains("open");e.target.setAttribute("aria-expanded",o);e.target.textContent=o?"Hide course outline":"Show course outline";});
+window.addEventListener("hashchange",route);
+route();
+</script>
+
+</body>
+</html>
